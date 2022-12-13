@@ -96,9 +96,9 @@ pub(crate) struct ErrorWrap {
 #[derive(Debug, Deserialize, Serialize, Clone, thiserror::Error)]
 #[error("{name} {message:?}")]
 pub struct ErrorMessage {
-    pub(crate) name: String,
-    pub(crate) message: String,
-    pub(crate) stack: String
+    pub name: String,
+    pub message: String,
+    pub stack: String
 }
 
 #[derive(Debug, Deserialize, Serialize)]
