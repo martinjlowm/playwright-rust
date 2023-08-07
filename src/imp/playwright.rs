@@ -2,9 +2,9 @@ use crate::{
     api::{browser::ContextBuilder, browser_type::PersistentContextLauncher},
     imp::{
         browser_type::BrowserType, core::*, impl_future::*, prelude::*, selectors::Selectors,
-        utils::Viewport
+        utils::Viewport,
     },
-    protocol::generated::{playwright as protocol, root::commands::InitializeArgsSdkLanguage}
+    protocol::generated::{playwright as protocol, root::commands::InitializeArgsSdkLanguage},
 };
 use serde::Deserialize;
 use std::{sync::TryLockError, time::Instant};
@@ -16,7 +16,7 @@ pub(crate) struct Playwright {
     firefox: Weak<BrowserType>,
     webkit: Weak<BrowserType>,
     selectors: Weak<Selectors>,
-    devices: Vec<DeviceDescriptor>
+    devices: Vec<DeviceDescriptor>,
 }
 
 impl Playwright {
@@ -33,7 +33,7 @@ impl Playwright {
             selectors,
             socks_support,
             utils,
-            webkit
+            webkit,
         } = serde_json::from_value(channel.initializer.clone())?;
         let chromium = get_object!(ctx, &chromium.guid, BrowserType)?;
         let firefox = get_object!(ctx, &firefox.guid, BrowserType)?;
@@ -50,23 +50,33 @@ impl Playwright {
             firefox,
             webkit,
             selectors,
-            devices
+            devices,
         })
     }
 
-    pub(crate) fn devices(&self) -> &[DeviceDescriptor] { &self.devices }
+    pub(crate) fn devices(&self) -> &[DeviceDescriptor] {
+        &self.devices
+    }
 
     pub(crate) fn device(&self, name: &str) -> Option<&DeviceDescriptor> {
         self.devices.iter().find(|d| d.name == name)
     }
 
-    pub(crate) fn chromium(&self) -> Weak<BrowserType> { self.chromium.clone() }
+    pub(crate) fn chromium(&self) -> Weak<BrowserType> {
+        self.chromium.clone()
+    }
 
-    pub(crate) fn firefox(&self) -> Weak<BrowserType> { self.firefox.clone() }
+    pub(crate) fn firefox(&self) -> Weak<BrowserType> {
+        self.firefox.clone()
+    }
 
-    pub(crate) fn webkit(&self) -> Weak<BrowserType> { self.webkit.clone() }
+    pub(crate) fn webkit(&self) -> Weak<BrowserType> {
+        self.webkit.clone()
+    }
 
-    pub(crate) fn selectors(&self) -> Weak<Selectors> { self.selectors.clone() }
+    pub(crate) fn selectors(&self) -> Weak<Selectors> {
+        self.selectors.clone()
+    }
 
     pub(crate) async fn wait_initial_object(conn: &Connection) -> Result<Weak<Self>, Error> {
         let root = {
@@ -82,9 +92,9 @@ impl Playwright {
                 sdk_language: InitializeArgsSdkLanguage::Python
             }
         );
-        let v = Arc::unwrap_or_clone(v);
+        let v = (*v).clone();
         let crate::protocol::generated::root::commands::Initialize {
-            playwright: crate::protocol::generated::Playwright { guid }
+            playwright: crate::protocol::generated::Playwright { guid },
         } = serde_json::from_value(v)?;
         let ctx = upgrade(&conn.context())?;
         let ctx = ctx.lock();
@@ -94,8 +104,12 @@ impl Playwright {
 }
 
 impl RemoteObject for Playwright {
-    fn channel(&self) -> &ChannelOwner { &self.channel }
-    fn channel_mut(&mut self) -> &mut ChannelOwner { &mut self.channel }
+    fn channel(&self) -> &ChannelOwner {
+        &self.channel
+    }
+    fn channel_mut(&mut self) -> &mut ChannelOwner {
+        &mut self.channel
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -107,7 +121,7 @@ pub struct DeviceDescriptor {
     pub device_scale_factor: f64,
     pub is_mobile: bool,
     pub has_touch: bool,
-    pub default_browser_type: protocol::InitializerDeviceDescriptorsDescriptorDefaultBrowserType
+    pub default_browser_type: protocol::InitializerDeviceDescriptorsDescriptorDefaultBrowserType,
 }
 
 impl TryFrom<protocol::InitializerDeviceDescriptors> for DeviceDescriptor {
@@ -123,8 +137,8 @@ impl TryFrom<protocol::InitializerDeviceDescriptors> for DeviceDescriptor {
                     is_mobile,
                     screen,
                     user_agent,
-                    viewport
-                }
+                    viewport,
+                },
         } = x;
         Ok(DeviceDescriptor {
             name,
@@ -138,7 +152,7 @@ impl TryFrom<protocol::InitializerDeviceDescriptors> for DeviceDescriptor {
             device_scale_factor: device_scale_factor.as_f64().ok_or(())?,
             is_mobile,
             has_touch,
-            default_browser_type
+            default_browser_type,
         })
     }
 }
@@ -146,7 +160,7 @@ impl TryFrom<protocol::InitializerDeviceDescriptors> for DeviceDescriptor {
 impl TryFrom<protocol::InitializerDeviceDescriptorsDescriptorScreen> for Viewport {
     type Error = ();
     fn try_from(
-        x: protocol::InitializerDeviceDescriptorsDescriptorScreen
+        x: protocol::InitializerDeviceDescriptorsDescriptorScreen,
     ) -> Result<Self, Self::Error> {
         let protocol::InitializerDeviceDescriptorsDescriptorScreen { height, width } = x;
         let width: i32 = width.as_i64().ok_or(())?.try_into().map_err(|_| ())?;
@@ -158,7 +172,7 @@ impl TryFrom<protocol::InitializerDeviceDescriptorsDescriptorScreen> for Viewpor
 impl TryFrom<protocol::InitializerDeviceDescriptorsDescriptorViewport> for Viewport {
     type Error = ();
     fn try_from(
-        x: protocol::InitializerDeviceDescriptorsDescriptorViewport
+        x: protocol::InitializerDeviceDescriptorsDescriptorViewport,
     ) -> Result<Self, Self::Error> {
         let protocol::InitializerDeviceDescriptorsDescriptorViewport { height, width } = x;
         let width: i32 = width.as_i64().ok_or(())?.try_into().map_err(|_| ())?;
@@ -185,14 +199,14 @@ macro_rules! impl_set_device {
 impl DeviceDescriptor {
     pub(crate) fn set_persistent_context<'source, 'b, 'c, 'd, 'e, 'g, 'h, 'i, 'j, 'k, 'l>(
         device: &'source Self,
-        builder: PersistentContextLauncher<'b, 'c, 'd, 'e, 'source, 'g, 'h, 'i, 'j, 'k, 'l>
+        builder: PersistentContextLauncher<'b, 'c, 'd, 'e, 'source, 'g, 'h, 'i, 'j, 'k, 'l>,
     ) -> PersistentContextLauncher<'b, 'c, 'd, 'e, 'source, 'g, 'h, 'i, 'j, 'k, 'l> {
         impl_set_device!(device, builder)
     }
 
     pub(crate) fn set_context<'source, 'c, 'd, 'e, 'f, 'g, 'h>(
         device: &'source Self,
-        builder: ContextBuilder<'source, 'c, 'd, 'e, 'f, 'g, 'h>
+        builder: ContextBuilder<'source, 'c, 'd, 'e, 'f, 'g, 'h>,
     ) -> ContextBuilder<'source, 'c, 'd, 'e, 'f, 'g, 'h> {
         impl_set_device!(device, builder)
     }
